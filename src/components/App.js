@@ -1,16 +1,45 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
+import Filter from "./Filter";
+import Dogbar from "./Dogbar";
+import Summary from "./Summary"
 
 function App() {
+  const [dogs, setDogs] = useState([])
+  const [displayDog, setDisplayDog] = useState({})
+  const [filterOn, setFilterOn] = useState(false)
+
+  useEffect(()=>{
+    fetch("http://localhost:3001/pups")
+    .then(r => r.json())
+    .then(data => setDogs(data))
+  }, [])
+
+  function handleClick(dog) {
+    setDisplayDog(dog)
+  }
+
+  function updatedDog(updatedDogObj) {
+    const updatedDogsList = dogs.map((dog) => {
+      if (dog.id === updatedDogObj.id) {
+        return updatedDogObj
+      }
+      else return dog
+    })
+    setDisplayDog(updatedDogObj)
+    setDogs(updatedDogsList)
+  }
+
+  function updateFilter(){
+    setFilterOn(!filterOn)
+  }
+
+  const filteredDogs = dogs.filter((dog) => dog.isGoodDog)
+
   return (
     <div className="App">
-      <div id="filter-div">
-        <button id="good-dog-filter">Filter good dogs: OFF</button>
-      </div>
-      <div id="dog-bar"></div>
-      <div id="dog-summary-container">
-        <h1>DOGGO:</h1>
-        <div id="dog-info"></div>
-      </div>
+      <Filter filterOn={filterOn} updateFilter={updateFilter}/>
+      <Dogbar dogs={filterOn ? filteredDogs : dogs} handleClick={handleClick}/>
+      <Summary displayDog={displayDog} updatedDog={updatedDog}/>
     </div>
   );
 }
